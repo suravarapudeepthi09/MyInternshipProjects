@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #add8e6; 
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        li.completed {
+            background-color: #f0f0f0;
+        }
+
+        .delete-btn, .edit-btn, .update-btn {
+            background-color: #ff3333;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .edit-btn {
+            background-color: #3366ff;
+        }
+
+        .update-btn {
+            background-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>To-Do List</h1>
+        <input type="text" id="taskInput" placeholder="Add new task...">
+        <ul id="taskList"></ul>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const taskInput = document.getElementById('taskInput');
+            const taskList = document.getElementById('taskList');
+
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+            function renderTasks() {
+                taskList.innerHTML = '';
+                tasks.forEach(function(task, index) {
+                    const li = document.createElement('li');
+                    const span = document.createElement('span');
+                    span.textContent = task.text;
+                    li.appendChild(span);
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = task.text;
+                    input.style.display = 'none';
+                    li.appendChild(input);
+                    if (task.completed) {
+                        li.classList.add('completed');
+                    }
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.classList.add('delete-btn');
+                    deleteBtn.addEventListener('click', function() {
+                        tasks.splice(index, 1);
+                        localStorage.setItem('tasks', JSON.stringify(tasks));
+                        renderTasks();
+                    });
+                    const editBtn = document.createElement('button');
+                    editBtn.textContent = 'Update';
+                    editBtn.classList.add('edit-btn');
+                    editBtn.addEventListener('click', function() {
+                        li.classList.toggle('edit-mode');
+                        if (li.classList.contains('edit-mode')) {
+                            input.style.display = 'inline-block';
+                            span.style.display = 'none';
+                            input.focus();
+                        } else {
+                            task.text = input.value;
+                            localStorage.setItem('tasks', JSON.stringify(tasks));
+                            span.textContent = input.value;
+                            span.style.display = 'inline-block';
+                            input.style.display = 'none';
+                        }
+                    });
+                    const updateBtn = document.createElement('button');
+                    updateBtn.textContent = 'Update';
+                    updateBtn.classList.add('update-btn');
+                    updateBtn.style.display = 'none';
+                    updateBtn.addEventListener('click', function() {
+                        li.classList.toggle('edit-mode');
+                        task.text = input.value;
+                        localStorage.setItem('tasks', JSON.stringify(tasks));
+                        span.textContent = input.value;
+                        span.style.display = 'inline-block';
+                        input.style.display = 'none';
+                    });
+                    li.appendChild(editBtn);
+                    li.appendChild(updateBtn);
+                    li.appendChild(deleteBtn);
+                    li.addEventListener('click', function() {
+                        task.completed = !task.completed;
+                        localStorage.setItem('tasks', JSON.stringify(tasks));
+                        renderTasks();
+                    });
+                    taskList.appendChild(li);
+                });
+            }
+
+            function addTask(text) {
+                tasks.push({ text: text, completed: false });
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                renderTasks();
+            }
+
+            taskInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && taskInput.value.trim() !== '') {
+                    addTask(taskInput.value.trim());
+                    taskInput.value = '';
+                }
+            });
+
+            renderTasks();
+        });
+    </script>
+</body>
+</html>
